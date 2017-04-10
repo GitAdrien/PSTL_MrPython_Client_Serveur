@@ -20,7 +20,11 @@ print("Connexion établie avec le serveur.")
  
 # 3) Dialogue avec le serveur :
 msgServeur = mySocket.recv(1024).decode("Utf8")
-docJson = {"execOrEval" : "exec", "filename" : "test.txt", "source" : "testReturn.txt", "mode" : "full"}
+mon_fichier = open("test.txt", "r")
+contenu = mon_fichier.read()
+mon_fichier.close()
+docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full" }}
+#docJson = {"execOrEval" : "exec", "filename" : "test.txt", "source" : "testReturn.txt", "mode" : "full"}
 docJson2 = json.dumps(docJson)
 print("S>", msgServeur)
 msgClient = docJson2
