@@ -92,7 +92,7 @@ if(error==False):
 #    retour["content"]={"stdout": out,"stderr": err}#+report:warnings
 #    
 #    print(type(out))
-    print(retour["content"]["stdout"])
+
     pass
 else:
     retour["msg_type"]="exec_error"
