@@ -27,35 +27,39 @@ msgServeur ="Vous êtes connecté au serveur"
 connexion.send(msgServeur.encode("Utf8"))
 print("Listening on %s:%s..." % (host, str(port)))
 
-def _computeOutExec(content, type):
+def _computeOutExec(content, typ):
     error = False
-    content {}
+    content={}
     fst_stdout = sys.stdout
     fst_stderr = sys.stderr
     sys.stdout = open("out.txt", 'w+')#redirige la sortie standard
     sys.stderr = open("err.txt",'w+') #redirige la sortie d'erreur
 
-    code = compile(content["source"],'', type)
-    if(type == "exec"):
+    code = compile(content["source"],'', typ)
+    if(typ == "exec"):
         exec(code)
-    elif(type == "eval")
+    elif(type == "eval"):
         eval(code)
     else:
         error = True
     #exec écrit dans la sortie standard
 
-    if(len(err_str)>0):
-        error=True
-    content["stdout"] = out_str
-    content["stderr"] = err_str
-    a, b, tb = sys.exc_info()
+    
 
     sys.stdout.seek(0) #remise à zero des deux fichier afin de les lires
     sys.stderr.seek(0)
     out_str=sys.stdout.read() # calcul de la sortie
     err_str=sys.stderr.read()
+    sys.stdout.close()
+    sys.stderr.close()
     sys.stdout=fst_stdout #remise à la normal de la sortie standard
     sys.stderr=fst_stderr
+    if(len(err_str)>0):
+        error=True
+    content["stdout"] = out_str
+    content["stderr"] = err_str
+    a, b, tb = sys.exc_info()
+    
     if(error==True):
         content["report"] = tb
     return content, error
@@ -70,7 +74,7 @@ def _compileExec(prot):
             if(error == True):
                 ret["msg_type"] = "exec_error"
             else:
-                rer["msg_type"] = "eval_success"
+                ret["msg_type"] = "eval_success"
             ret["protocol_version"] = prot["protocol_version"]
             jsonRetour = json.dumps(ret)
             connexion.send(jsonRetour.encode("Utf8"))
@@ -82,13 +86,14 @@ def _compileExec(prot):
             if(error == True):
                 ret["msg_type"] = "exec_error"
             else:
-                rer["msg_type"] = "eval_success"
+                ret["msg_type"] = "eval_success"
             ret["protocol_version"] = prot["protocol_version"]
             jsonRetour = json.dumps(ret)
             connexion.send(jsonRetour.encode("Utf8"))
             pass
         else:
             # aucun mode déféni
+            pass
     else:
         #TODO: mode student
         pass
@@ -148,6 +153,10 @@ def serverLoop(t1):
                 connexion.send(jsonRetour.encode("Utf8"))
         elif(test["msg_type"]=="exec"):
             #exec_proc=Process(target=_compileExec,args=(test))
+            t1=ExecProcess(test)
+            t1.start()
+            
+        elif(test["msg_type"]=="eval"):
             t1=ExecProcess(test)
             t1.start()
 
