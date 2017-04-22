@@ -27,74 +27,93 @@ msgServeur ="Vous êtes connecté au serveur"
 connexion.send(msgServeur.encode("Utf8"))
 print("Listening on %s:%s..." % (host, str(port)))
 
+def _computeOutExec(content, type):
+    error = False
+    content {}
+    fst_stdout = sys.stdout
+    fst_stderr = sys.stderr
+    sys.stdout = open("out.txt", 'w+')#redirige la sortie standard
+    sys.stderr = open("err.txt",'w+') #redirige la sortie d'erreur
 
+    code = compile(content["source"],'', type)
+    if(type == "exec"):
+        exec(code)
+    elif(type == "eval")
+        eval(code)
+    else:
+        error = True
+    #exec écrit dans la sortie standard
+
+    if(len(err_str)>0):
+        error=True
+    content["stdout"] = out_str
+    content["stderr"] = err_str
+    a, b, tb = sys.exc_info()
+
+    sys.stdout.seek(0) #remise à zero des deux fichier afin de les lires
+    sys.stderr.seek(0)
+    out_str=sys.stdout.read() # calcul de la sortie
+    err_str=sys.stderr.read()
+    sys.stdout=fst_stdout #remise à la normal de la sortie standard
+    sys.stderr=fst_stderr
+    if(error==True):
+        content["report"] = tb
+    return content, error
 def _compileExec(prot):
     error = False
     ret={}
     if(prot["content"]["mode"] == "full"):
         if(prot["msg_type"] == "exec"):
-            
-        
-            fst_stdout=sys.stdout
-            fst_stderr=sys.stderr
-            sys.stdout = open("out.txt", 'w+')
-            sys.stderr=open("err.txt",'w+')
-            
-            code = compile(prot["content"]["source"],'', 'exec')#on écrit la sortie std out dans out  et stderr dans err  
-         
-            exec(code)
-            sys.stdout.seek(0)
-            sys.stderr.seek(0)
-            out_str=sys.stdout.read()
-            err_str=sys.stderr.read()
-            sys.stdout=fst_stdout
-            sys.stderr=fst_stderr
-            a, b, tb = sys.exc_info() 
-            if(len(err_str)>0):	
-                error=True
-            ret["content"]={}
-            ret["content"]["stdout"]=out_str
-            ret["content"]["stderr"]=err_str
-            #TODO gestion erreurs
-            ret["session_id"]=prot["session_id"]+1
+            ret["content"], error = _computeOutExec(prot["content"], "exec")
+            ret["session_id"] = prot["session_id"]+1
             ret["msg_id"]=prot["msg_id"]+1
-            
-            ret["protocol_version"]=prot["protocol_version"]
-            if(error==True):
-                ret["msg_type"]="exec_error"
-                ret["content"]["report"]=tb
+            if(error == True):
+                ret["msg_type"] = "exec_error"
             else:
-                ret["msg_type"]="exec_success"
+                rer["msg_type"] = "eval_success"
+            ret["protocol_version"] = prot["protocol_version"]
             jsonRetour = json.dumps(ret)
             connexion.send(jsonRetour.encode("Utf8"))
-        else:
+        elif(prot["msg_type"] == "eval"):
             #TODO : mode eval
+            ret["content"], error = _computeOutExec(prot["content"], "eval")
+            ret["session_id"] = prot["session_id"]+1
+            ret["msg_id"]=prot["msg_id"]+1
+            if(error == True):
+                ret["msg_type"] = "exec_error"
+            else:
+                rer["msg_type"] = "eval_success"
+            ret["protocol_version"] = prot["protocol_version"]
+            jsonRetour = json.dumps(ret)
+            connexion.send(jsonRetour.encode("Utf8"))
             pass
+        else:
+            # aucun mode déféni
     else:
         #TODO: mode student
         pass
-   
+
 
 
 class ExecProcess(Process):
 
-    
+
 
     def __init__(self, prot):
         Process.__init__(self)
         self.prot = prot
 
     def run(self):
-        
+
         _compileExec(self.prot)
-        
-       
+
+
 #exec_proc=Process(target=_compileExec,args=({}))
 mon_fichier = open("loop.txt", "r")
 contenu = mon_fichier.read()
-mon_fichier.close()       
+mon_fichier.close()
 docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full" }}
-       
+
 t1=ExecProcess(docJson)
 t1.start()
 
@@ -107,7 +126,7 @@ def serverLoop(t1):
         sdata = data.decode("Utf8")
         test = json.loads(sdata)
         if(test["msg_type"]=="interrupt"):
-            
+
             if(t1.is_alive()):
                 t1.terminate()
                 retour={}
@@ -133,10 +152,9 @@ def serverLoop(t1):
             t1.start()
 
 serverLoop(t1)
-                
-             
-        
-   
+
+
+
+
 
 #connexion.close()
-
