@@ -104,7 +104,7 @@ Evaluation d'une expression
     {...
 	"msg_type": "exec_success"
 	  "content": {
-	               "data": data # valeur(s) retournées (cf. structure "data")
+	               
 				   "stdout" : str # sorties standard
 				   "stderr" : str # sorties erreur
 				   "report" : [ ... cf. "error" (mais que des warnings) ]
@@ -146,8 +146,48 @@ Evaluation d'une expression
 	 
     }
    
+## Affichage graphique
+### 1. Emission par RunServer
 
+    {...
+	  "msg_type": "graphics"
+	  "content": data #image à afficher 
+	  	
+     }
 
+### 2. Retour par MrPython
+   - variante 1 : succès
+
+    ```
+    {...
+	"msg_type": "graphics_success"
+	  "content": {
+	               
+				   "stdout" : str # sorties standard
+				   "stderr" : str # sorties erreur
+				   "report" : [ ... cf. "error" (mais que des warnings) ]
+	             }
+     }
+    ```
+
+   - variante 2 : erreur
+   
+    ```
+    {...
+	"msg_type": "graphics_error"
+	  "content": {
+	               "report":  [ 
+				     { "error_type": "exception" | "student"
+	               "traceback": tb # cf. module traceback (décodage de toutes les infos potentiellement utile sur l'erreur) pour les erreurs "exception"
+				   # ou alors, pour les erreurs "student"
+				   "infos":  { "student_error_type": str
+				                "severity" : "error" | "warning"
+				                    "description": json # en fonction du type d'erreur
+   							  } ... ]
+                  } 
+    }
+    ``` 
+    
 
 ## Entrée sur console
 ### 1. Emission par RunServer

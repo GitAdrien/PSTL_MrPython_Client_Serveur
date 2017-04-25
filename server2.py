@@ -16,7 +16,7 @@ from multiprocessing import Process
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = socket.gethostname()
-port = 5000
+port = 5001
 
 buffer_size = 4096
 
@@ -27,19 +27,23 @@ msgServeur ="Vous êtes connecté au serveur"
 connexion.send(msgServeur.encode("Utf8"))
 print("Listening on %s:%s..." % (host, str(port)))
 
-def _computeOutExec(content, typ):
+def _computeOutExec(contenu, typ):
     error = False
-    content={}
+    retcontent={}
     fst_stdout = sys.stdout
     fst_stderr = sys.stderr
     sys.stdout = open("out.txt", 'w+')#redirige la sortie standard
     sys.stderr = open("err.txt",'w+') #redirige la sortie d'erreur
-
-    code = compile(content["source"],'', typ)
+    
+    
     if(typ == "exec"):
+        code = compile(contenu["source"],'', typ)
         exec(code)
-    elif(type == "eval"):
-        eval(code)
+    elif(typ == "eval"):
+        
+        code = compile(contenu["expr"],'', typ)
+        data=eval(code)
+        retcontent["data"]=data
     else:
         error = True
     #exec écrit dans la sortie standard
@@ -56,14 +60,15 @@ def _computeOutExec(content, typ):
     sys.stderr=fst_stderr
     if(len(err_str)>0):
         error=True
-    content["stdout"] = out_str
-    content["stderr"] = err_str
+    retcontent["stdout"] = out_str
+    retcontent["stderr"] = err_str
     a, b, tb = sys.exc_info()
     
     if(error==True):
-        content["report"] = tb
-    return content, error
+        retcontent["report"] = tb
+    return retcontent, error
 def _compileExec(prot):
+    print("compileexec")
     error = False
     ret={}
     if(prot["content"]["mode"] == "full"):
@@ -74,22 +79,25 @@ def _compileExec(prot):
             if(error == True):
                 ret["msg_type"] = "exec_error"
             else:
-                ret["msg_type"] = "eval_success"
+                ret["msg_type"] = "exec_success"
             ret["protocol_version"] = prot["protocol_version"]
             jsonRetour = json.dumps(ret)
             connexion.send(jsonRetour.encode("Utf8"))
         elif(prot["msg_type"] == "eval"):
             #TODO : mode eval
+            print("_compileExec eval")
             ret["content"], error = _computeOutExec(prot["content"], "eval")
+            print("compute_eval")
             ret["session_id"] = prot["session_id"]+1
             ret["msg_id"]=prot["msg_id"]+1
             if(error == True):
-                ret["msg_type"] = "exec_error"
+                ret["msg_type"] = "eval_error"
             else:
                 ret["msg_type"] = "eval_success"
             ret["protocol_version"] = prot["protocol_version"]
             jsonRetour = json.dumps(ret)
             connexion.send(jsonRetour.encode("Utf8"))
+            print("json envoyé")
             pass
         else:
             # aucun mode déféni
@@ -114,22 +122,25 @@ class ExecProcess(Process):
 
 
 #exec_proc=Process(target=_compileExec,args=({}))
-mon_fichier = open("loop.txt", "r")
-contenu = mon_fichier.read()
-mon_fichier.close()
-docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full" }}
+#mon_fichier = open("loop.txt", "r")
+#contenu = mon_fichier.read()
+#mon_fichier.close()
+#docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full" }}
 
-t1=ExecProcess(docJson)
-t1.start()
+t1=ExecProcess({})
+#t1.start()
 
 def serverLoop(t1):
     while True:
+        print("serverloop")
         data=connexion.recv(buffer_size)
         if(not data):
             connexion.close()
             return
         sdata = data.decode("Utf8")
+        print("sdata=",sdata)
         test = json.loads(sdata)
+        
         if(test["msg_type"]=="interrupt"):
 
             if(t1.is_alive()):
@@ -151,14 +162,12 @@ def serverLoop(t1):
                 retour["content"]={}
                 jsonRetour = json.dumps(retour)
                 connexion.send(jsonRetour.encode("Utf8"))
-        elif(test["msg_type"]=="exec"):
+        elif(test["msg_type"]=="exec" or test["msg_type"]=="eval" ):
             #exec_proc=Process(target=_compileExec,args=(test))
             t1=ExecProcess(test)
             t1.start()
             
-        elif(test["msg_type"]=="eval"):
-            t1=ExecProcess(test)
-            t1.start()
+        
 
 serverLoop(t1)
 
