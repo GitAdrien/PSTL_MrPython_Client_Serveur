@@ -1,0 +1,3 @@
+Présentation Mr Python :
+
+Mr Python est un environnement de développement destiné aux élèves de premier année de licence d’informatique de l’UPMC. Les élèves découvrent la programmation grâce au langage de programmation Python, c’est pourquoi ils ont besoin d’un environnement de développment adapté. Mr python est basé sur l’IDE idle, mais ne conserve que les fonctionalité « utiles » pour des étudiants de première année. Mais l’objectif principal de Mr Python est de permettre aux étudiants de mieux comprendre les messages d’erreurs retrouné par l’interpreteur. 
