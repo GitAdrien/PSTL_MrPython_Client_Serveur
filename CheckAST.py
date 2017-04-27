@@ -16,6 +16,7 @@ class CheckAST(object):
         '''
         self.ast=ast
         self.report=report
+        
     
     def check(self):
         return self.ast,self.report

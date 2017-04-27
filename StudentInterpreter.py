@@ -5,7 +5,6 @@ Created on Thu Apr 27 10:50:13 2017
 @author: 3605386
 """
 from multiprocessing import Process
-import pipes
 import sys
 import json
 class ExecProcess(Process):
@@ -33,7 +32,7 @@ class ExecProcess(Process):
             code = compile(contenu["source"],'', typ)
             exec(code)
         elif(typ == "eval"):
-        
+            
             code = compile(contenu["expr"],'', typ)
             data=eval(code)
             retcontent["data"]=data
@@ -67,7 +66,7 @@ class ExecProcess(Process):
             error = False
             ret={}
             if(prot == {}):
-                 #wait
+                #wait
                 prot = self.pipe.recv()
             if(prot["content"]["mode"] == "full"): #Plus d'interet!!!! #TODO
                 if(prot["msg_type"] == "exec"):

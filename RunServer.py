@@ -7,7 +7,7 @@ Created on Thu Apr 27 10:43:45 2017
 import socket
 from StudentInterpreter import StudentInterpreter
 import json
-from multiprocessing import Pipe
+from multiprocessing import Pipe, Process
 class RunServer():
     def __init__(self):
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,6 +20,10 @@ class RunServer():
         msgServeur ="Vous êtes connecté au serveur"
         self.connexion.send(msgServeur.encode("Utf8"))
         print("Listening on %s:%s..." % (host, str(port)))
+    def waitResult(self,pipe):
+        pass
+        res=pipe.recv(self.buffer_size)
+        self.connexion.send(res)
     def serverLoop(self):
     
         server_con, interpreter_conn = Pipe()
@@ -61,6 +65,8 @@ class RunServer():
                 #Lancer une instance d'un interpreter
                 interpreter.t1.terminate()
                 interpreter = StudentInterpreter(prot, interpreter_conn)
+                waitproc=Process(target=self.wait_result)
+                waitproc.start()
             elif(prot["msg_type"] == "eval"):
                 server_con.send(prot)
                 
