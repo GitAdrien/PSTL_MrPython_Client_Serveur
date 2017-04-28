@@ -62,8 +62,6 @@ class RunServer():
                     jsonRetour = json.dumps(retour)
                     self.connexion.send(jsonRetour.encode("Utf8"))
             elif(prot["msg_type"]=="exec"):
-                #exec_proc=Process(target=_compileExec,args=(test))
-                #Lancer une instance d'un interpreter
                 interpreter.t1.terminate()
                 interpreter = StudentInterpreter(prot, interpreter_conn)
                 waitproc=Process(target=self.wait_result)
