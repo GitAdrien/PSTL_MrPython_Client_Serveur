@@ -6,6 +6,7 @@ Created on 27 avr. 2017
 
 from py_compile import PyCompileError
 from RunReport import RunReport
+from Parser import Parser
 class Compiler(object):
     '''
     Compilateur
@@ -24,15 +25,25 @@ class Compiler(object):
     def compile(self):
         try:
             code = compile(self.ast,self.filename, self.compil_type)
-        except PyCompileError as err:
+        except SyntaxError as err:
             self.report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            print("compileerror")
+            print(self.report.compilation_errors[0].error_details())
+            return None,self.report
+        except ValueError as err:
+            self.report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            print("compileerror")
+            print(self.report.compilation_errors[0].error_details())
             return None,self.report
         #TODO: ajouter les erreurs
         return code,self.report
 
-f=open("test.txt")
-source=f.read()
-f.close()  
-r=RunReport() 
+#f=open("test.txt")
+#source=f.read()
+#f.close()  
+#report=RunReport() 
 
-c=Compiler()    
+#p=Parser(source,report,"test.txt")
+#ast,report=p.parse()
+#c=Compiler(ast,report,"exec","test.txt")
+#c.compile()
