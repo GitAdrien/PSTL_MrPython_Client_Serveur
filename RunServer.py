@@ -5,6 +5,7 @@ Created on Thu Apr 27 10:43:45 2017
 @author: 3605386
 """
 import socket
+import logging
 from StudentInterpreter import StudentInterpreter
 import json
 from multiprocessing import Pipe, Process
@@ -12,14 +13,16 @@ class RunServer():
     def __init__(self):
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = socket.gethostname()
-        port = 5001
         self.buffer_size = 4096
-        serverSocket.bind((host, port))
+        serverSocket.bind((host, 0)) #Prend le premier port disponible
+        port  = sock.getsockname()[1] # numero du port
+        config_file=open("config.txt","w")
+        config_file.write(port)
         serverSocket.listen(10)
         self.connexion, addresse = serverSocket.accept()
         msgServeur ="Vous êtes connecté au serveur"
         self.connexion.send(msgServeur.encode("Utf8"))
-        print("Listening on %s:%s..." % (host, str(port)))
+        Logger.info("Listening on %s:%s..." % (host, str(port)))
     def waitResult(self,pipe):
         pass
         res=pipe.recv(self.buffer_size)
@@ -30,13 +33,11 @@ class RunServer():
         interpreter = StudentInterpreter({}, interpreter_conn)
 
         while True:
-            print("serverloop")
             data = self.connexion.recv(self.buffer_size)
             if(not data):
                 self.connexion.close()
                 return
             sdata = data.decode("Utf8")
-            print("sdata=",sdata)
             prot = json.loads(sdata)
             
             if(prot["msg_type"]=="interrupt"):
@@ -69,6 +70,8 @@ class RunServer():
                 waitproc.start()
             elif(prot["msg_type"] == "eval"):
                 server_con.send(prot)
+            else:
+                Logger.error("msg_type error")
                 
 
 if __name__ == "__main__":

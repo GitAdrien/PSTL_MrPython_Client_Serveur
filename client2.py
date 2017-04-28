@@ -1,11 +1,12 @@
 # Définition d'un client réseau rudimentaire
 # Ce client dialogue avec un serveur ad hoc
- 
+import uuid
 import socket, sys
 import json
 from threading import Thread
 HOST = socket.gethostname()
-PORT = 5001
+mon_fichier_config = open("config.txt",r)
+PORT = mon_fichier_config.read()
 
 # 1) création du socket :
 mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -72,7 +73,7 @@ mon_fichier.close()
 #mySocket.send(msgClient.encode("Utf8"))
 
 
-evaljson ={ "session_id": 1, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1,"content":{"expr":contenu, "mode":"full" }}
+evaljson ={ "session_id": uuid.int, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1,"content":{"expr":contenu, "mode":"full" }}
 ev2 = json.dumps(evaljson)
 print("ev2=",ev2)
 #msgClient = inter2
