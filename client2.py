@@ -5,18 +5,18 @@ import socket, sys
 import json
 from threading import Thread
 HOST = socket.gethostname()
-mon_fichier_config = open("config.txt",r)
-PORT = mon_fichier_config.read()
+mon_fichier_config = open("config.txt","r")
+PORT = int(mon_fichier_config.read())
 
 # 1) création du socket :
 mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
  
 # 2) envoi d'une requête de connexion au serveur :
 try:
-  mySocket.connect((HOST, PORT))
+    mySocket.connect((HOST, PORT))
 except socket.error:
-  print("La connexion a échoué.")
-  sys.exit()
+    print("La connexion a échoué.")
+    sys.exit()
 print("Connexion établie avec le serveur.")
 
 class PrintThread(Thread):
@@ -44,16 +44,16 @@ print("msgserveur")
 t=PrintThread()
 t.start()
 #mon_fichier = open("test.txt", "r")
-mon_fichier=open("expr.txt","r")
+mon_fichier=open("test.txt","r")
 contenu = mon_fichier.read()
 mon_fichier.close()
 
-#docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full" }}
+docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full","filename":"test.txt" }}
 ##docJson = {"execOrEval" : "exec", "filename" : "test.txt", "source" : "testReturn.txt", "mode" : "full"}
-#docJson2 = json.dumps(docJson)
-#print("S>", msgServeur)
-#msgClient = docJson2
-#mySocket.send(msgClient.encode("Utf8"))
+docJson2 = json.dumps(docJson)
+print("S>", msgServeur)
+msgClient = docJson2
+mySocket.send(msgClient.encode("Utf8"))
 
 #vcfmsgServeur = mySocket.recv(1024).decode("Utf8")
 #retour=json.loads(vcfmsgServeur)
@@ -73,21 +73,21 @@ mon_fichier.close()
 #mySocket.send(msgClient.encode("Utf8"))
 
 
-evaljson ={ "session_id": uuid.int, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1,"content":{"expr":contenu, "mode":"full" }}
-ev2 = json.dumps(evaljson)
-print("ev2=",ev2)
+#evaljson ={ "session_id": uuid.int, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1,"content":{"expr":contenu, "mode":"full" }}
+#ev2 = json.dumps(evaljson)
+#print("ev2=",ev2)
 #msgClient = inter2
 #msg1 = ev2.encode("Utf8")
 #print("msg1=",msg1)
-mySocket.send(ev2.encode("Utf8"))
-print("messg_sent 1")
+#mySocket.send(ev2.encode("Utf8"))
+#print("messg_sent 1")
 
 #msg2 = ev2.encode("Utf8")
 #print("msg2=",msg2)
 
-ev2 = json.dumps(evaljson)
-mySocket.send(ev2.encode("Utf8"))
-print("messg_sent 2")
+#ev2 = json.dumps(evaljson)
+#mySocket.send(ev2.encode("Utf8"))
+#print("messg_sent 2")
 
 t.join()
 # 4) Fermeture de la connexion :

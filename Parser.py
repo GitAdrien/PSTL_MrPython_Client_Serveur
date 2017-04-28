@@ -9,31 +9,29 @@ from RunReport import RunReport
 import sys
 class Parser():
     #va parser
-    def __init__(self,source, rapport,filename):
-        self.source = source
-        self.report = rapport
-        self.filename=filename
-    def parse(self):
+    def __init__(self):
+        pass
+    def parse(self,source,report,filename):
         try:
-            res = ast.parse(self.source,self.filename)
+            res = ast.parse(source,filename)
             #print("je parse")
         #    # Handle the different kinds of compilation errors
         except IndentationError as err:
-            self.report.add_compilation_error('error', "Bad indentation", err.lineno, err.offset)
+            report.add_compilation_error('error', "Bad indentation", err.lineno, err.offset)
             #print("indentationerror")
             #print(self.report.compilation_errors[0].error_details())
-            return None,self.report
+            return None,report
         except SyntaxError as err:
-            self.report.add_compilation_error('error', "Syntax error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Syntax error", err.lineno, err.offset, details=err.text)
             #print("syntaxerror")
-            #print(self.report.compilation_errors[0].error_details())
-            return None,self.report
+            #print(report.compilation_errors[0].error_details())
+            return None,report
         except Exception as err:
             typ, exc, tb = sys.exc_info()
-            self.report.add_compilation_error('error', str(typ), err.lineno, err.offset, details=str(err))
+            report.add_compilation_error('error', str(typ), err.lineno, err.offset, details=str(err))
             #print(self.report.compilation_errors[0].error_details())
-            return None,self.report
-        return res,self.report
+            return None,report
+        return res,report
          
 #f=open("test.txt")
 #source=f.read()

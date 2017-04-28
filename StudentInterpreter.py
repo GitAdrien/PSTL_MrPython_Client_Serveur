@@ -12,6 +12,7 @@ from Parser import Parser
 from CheckAST import CheckAST
 from Compiler import Compiler
 from Executor import Executor
+
 class ExecProcess(Process):
 
 
@@ -27,7 +28,7 @@ class ExecProcess(Process):
 
     def run(self):
 
-        self._compileExec(self.prot)
+        self.compileExec(self.prot)
         
     def _computeOutExec(self,contenu, typ):
         error = False
@@ -71,32 +72,31 @@ class ExecProcess(Process):
         #   return retcontent, error
         report=RunReport()
         #Parser
-        self.parser=Parser(contenu["source"],report,contenu["filename"])
-        ast,report=self.parser.parse()
+        ast,report=self.parser.parse(contenu["source"],report,contenu["filename"])
         if(ast==None):
             error=True
-            retcontent["report"]=report
+            #retcontent["report"]=report
             return retcontent,error
         #check
-        self.check_ast=CheckAST(ast,report)
-        ast,report=self.check_ast.check()
+        ast,report=self.check_ast.check(ast,report)
         if(ast==None):
             error=True
-            retcontent["report"]=report
+            #retcontent["report"]=report
             return retcontent,error
         #compilee
-        self.compiler=Compiler(ast,report,contenu["mode"],contenu["filename"])
-        code,report=self.compiler.compile()
+       
+        code,report=self.compiler.compile(ast,report,typ,contenu["filename"])
         if(code==None):
             error=True
-            retcontent["report"]=report
+            #retcontent["report"]=report
             return retcontent,error
         #executor
-        self.executor=Executor(code,report)
-        error,report,out_str,err_str=self.executor.execute()
+        
+        error,report,out_str,err_str=self.executor.execute(code,report)
+        print(error)
         if(error):
-            retcontent["report"]=report
-            return error,retcontent
+            #retcontent["report"]=report
+            return retcontent,error
         retcontent["stderr"]=err_str
         retcontent["stdout"]=out_str
         return retcontent,error
@@ -109,36 +109,36 @@ class ExecProcess(Process):
         while(True):
             error = False
             ret={}
-            if(prot == {}):
-                #wait
+            if(prot=={}):
                 prot = self.pipe.recv()
-                if(prot["msg_type"] == "exec"):
-                    ret["content"], error = self._computeOutExec(prot["content"], "exec")
-                    ret["session_id"] = prot["session_id"]+1
-                    ret["msg_id"]=prot["msg_id"]+1
-                    if(error == True):
-                        ret["msg_type"] = "exec_error"
-                    else:
-                        ret["msg_type"] = "exec_success"
-                    ret["protocol_version"] = prot["protocol_version"]
-                    jsonRetour = json.dumps(ret)
-                    #mettre sur le pipe : le truc dumpé
-                    self.pipe.send(jsonRetour.encode("Utf8"))
-                elif(prot["msg_type"] == "eval"):
+            if(prot["msg_type"] == "exec"):
+                ret["content"], error = self._computeOutExec(prot["content"], "exec")
+                ret["session_id"] = prot["session_id"]+1
+                ret["msg_id"]=prot["msg_id"]+1
+                if(error == True):
+                    ret["msg_type"] = "exec_error"
+                else:
+                    ret["msg_type"] = "exec_success"
+                ret["protocol_version"] = prot["protocol_version"]
+                jsonRetour = json.dumps(ret)
+                #mettre sur le pipe : le truc dumpé
+                self.pipe.send(jsonRetour.encode("Utf8"))
+            elif(prot["msg_type"] == "eval"):
                     #TODO : mode eval
-                    print("_compileExec eval")
-                    ret["content"], error = self._computeOutExec(prot["content"], "eval")
-                    print("compute_eval")
-                    ret["session_id"] = prot["session_id"]+1
-                    ret["msg_id"]=prot["msg_id"]+1
-                    if(error == True):
-                        ret["msg_type"] = "eval_error"
-                    else:
-                        ret["msg_type"] = "eval_success"
-                    ret["protocol_version"] = prot["protocol_version"]
-                    jsonRetour = json.dumps(ret)
-                    self.pipe.send(jsonRetour.encode("Utf8"))
-                    print("json envoyé")
+                print("_compileExec eval")
+                ret["content"], error = self._computeOutExec(prot["content"], "eval")
+                print("compute_eval")
+                ret["session_id"] = prot["session_id"]+1
+                ret["msg_id"]=prot["msg_id"]+1
+                if(error == True):
+                    ret["msg_type"] = "eval_error"
+                else:
+                    ret["msg_type"] = "eval_success"
+                ret["protocol_version"] = prot["protocol_version"]
+                jsonRetour = json.dumps(ret)
+                self.pipe.send(jsonRetour.encode("Utf8"))
+                print("json envoyé")
+            prot={}
                  
 
 class StudentInterpreter():

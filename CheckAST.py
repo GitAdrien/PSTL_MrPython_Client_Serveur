@@ -10,14 +10,13 @@ class CheckAST(object):
     '''
 
 
-    def __init__(self, ast,report):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.ast=ast
-        self.report=report
+        pass
         
     
-    def check(self):
-        return self.ast,self.report
+    def check(self,ast,report):
+        return ast,report
         

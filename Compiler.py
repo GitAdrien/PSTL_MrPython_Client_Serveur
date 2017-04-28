@@ -13,30 +13,27 @@ class Compiler(object):
     '''
 
 
-    def __init__(self, ast,report,compil_type,filename):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.ast=ast
-        self.report=report
-        self.compil_type=compil_type
-        self.filename=filename
+        
     
-    def compile(self):
+    def compile(self,ast,report,compil_type,filename):
         try:
-            code = compile(self.ast,self.filename, self.compil_type)
+            code = compile(ast,filename, compil_type)
         except SyntaxError as err:
-            self.report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
             print("compileerror")
-            print(self.report.compilation_errors[0].error_details())
-            return None,self.report
+            print(report.compilation_errors[0].error_details())
+            return None,report
         except ValueError as err:
-            self.report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
             print("compileerror")
-            print(self.report.compilation_errors[0].error_details())
-            return None,self.report
+            print(report.compilation_errors[0].error_details())
+            return None,report
         #TODO: ajouter les erreurs
-        return code,self.report
+        return code,report
 
 #f=open("test.txt")
 #source=f.read()
