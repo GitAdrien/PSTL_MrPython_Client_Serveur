@@ -5,7 +5,7 @@ Created on Thu Apr 27 10:43:45 2017
 @author: 3605386
 """
 import socket
-from logging import Logger
+import logging
 from StudentInterpreter import StudentInterpreter
 import json
 from multiprocessing import Pipe, Process
@@ -15,6 +15,7 @@ from CheckAST import CheckAST
 from Executor import Executor
 class RunServer():
     def __init__(self):
+        logger = logging.getLogger("run_server")
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = socket.gethostname()
         self.buffer_size = 4096
@@ -24,15 +25,16 @@ class RunServer():
         config_file=open("config.txt","w")
         config_file.write(str(port))
         config_file.flush()
-        print("ecrit")
+        logger.info("write") #logger.info n'affiche rien à l'écran contrairement à logger.warning
+
         serverSocket.listen(10)
-        print("ecoute")
+        logger.info("Listen")
         self.connexion, addresse = serverSocket.accept()
-        print("accept")
+        logger.info("accept")
         msgServeur ="Vous êtes connecté au serveur"
         
         self.connexion.send(msgServeur.encode("Utf8"))
-        #Logger.info("Listening on %s:%s..." % (host, str(port)))
+        logger.info("Listening on %s:%s..." % (host, str(port)))
     def waitResult(self,pipe):
         pass
         res=pipe.recv()
@@ -69,11 +71,11 @@ class RunServer():
                     self.connexion.send(jsonRetour.encode("Utf8"))
                 else:
                     retour={}
-                    retour["msg_type"]="interrupt_fail"
-                    retour["session_id"]=prot["session_id"]
-                    retour["msg_id"]=prot["msg_id"]+1
-                    retour["protocol_version"]=prot["protocol_version"]
-                    retour["content"]={}
+                    retour["msg_type"] = "interrupt_fail"
+                    retour["session_id"] = prot["session_id"]
+                    retour["msg_id"] = prot["msg_id"]+1
+                    retour["protocol_version"] = prot["protocol_version"]
+                    retour["content"] = {}
                     jsonRetour = json.dumps(retour)
                     self.connexion.send(jsonRetour.encode("Utf8"))
             elif(prot["msg_type"]=="exec"):
