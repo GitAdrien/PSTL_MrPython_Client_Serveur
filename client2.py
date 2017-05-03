@@ -1,8 +1,11 @@
 # Définition d'un client réseau rudimentaire
 # Ce client dialogue avec un serveur ad hoc
+
+#Test avec un exec puis un eval
 import uuid
 import socket, sys
 import json
+import time
 from threading import Thread
 HOST = socket.gethostname()
 mon_fichier_config = open("config.txt","r")
@@ -43,51 +46,27 @@ msgServeur = mySocket.recv(1024).decode("Utf8")
 print("msgserveur")
 t=PrintThread()
 t.start()
-#mon_fichier = open("test.txt", "r")
 mon_fichier=open("test.txt","r")
 contenu = mon_fichier.read()
 mon_fichier.close()
 
-docJson ={ "session_id": 1, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full","filename":"test.txt" }}
+id_exec = uuid.uuid1().int
+docJson ={ "session_id": id_exec, "msg_id": 1, "msg_type" : "exec", "protocol_version": 0.1, "content" : {"source" : contenu, "mode": "full","filename":"loop.txt" }}
 ##docJson = {"execOrEval" : "exec", "filename" : "test.txt", "source" : "testReturn.txt", "mode" : "full"}
 docJson2 = json.dumps(docJson)
 print("S>", msgServeur)
 msgClient = docJson2
 mySocket.send(msgClient.encode("Utf8"))
-
-#vcfmsgServeur = mySocket.recv(1024).decode("Utf8")
-#retour=json.loads(vcfmsgServeur)
-#content=retour["content"]
-#if(retour["msg_type"]=="exec_success"):
-#    print("cedric")
-#    print(content["stdout"])
-#    print(content["stderr"])
-#if(retour["msg_type"]=="exec_error"):
-#    print(content["stdout"])
-#    print(content["stderr"])
-#    print(content["report"])
-
-#inter ={ "session_id": 1, "msg_id": 1, "msg_type" : "interrupt", "protocol_version": 0.1}
-#inter2 = json.dumps(inter)
-#msgClient = inter2
-#mySocket.send(msgClient.encode("Utf8"))
+mon_fichier2=open("test2.txt","r")
+contenu2 = mon_fichier2.read()
+mon_fichier2.close()
+time.sleep(1)
+docJson3 ={ "session_id": uuid.uuid1().int, "msg_id": 1, "msg_type" : "interrupt", "protocol_version": 0.1, "content" : {"expr" : contenu2, "mode": "full","filename":"test2.txt" }}
+#docJson3 ={ "session_id": 2, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1, "content" : {"expr" : contenu2, "mode": "full","filename":"test2.txt" }}
+docJson4 = json.dumps(docJson3)
+mySocket.send(docJson4.encode("Utf8"))
 
 
-#evaljson ={ "session_id": uuid.int, "msg_id": 1, "msg_type" : "eval", "protocol_version": 0.1,"content":{"expr":contenu, "mode":"full" }}
-#ev2 = json.dumps(evaljson)
-#print("ev2=",ev2)
-#msgClient = inter2
-#msg1 = ev2.encode("Utf8")
-#print("msg1=",msg1)
-#mySocket.send(ev2.encode("Utf8"))
-#print("messg_sent 1")
-
-#msg2 = ev2.encode("Utf8")
-#print("msg2=",msg2)
-
-#ev2 = json.dumps(evaljson)
-#mySocket.send(ev2.encode("Utf8"))
-#print("messg_sent 2")
 
 t.join()
 # 4) Fermeture de la connexion :

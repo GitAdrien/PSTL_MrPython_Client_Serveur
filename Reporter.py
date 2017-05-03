@@ -10,8 +10,38 @@ class Reporter(object):
     '''
 
 
-    def __init__(self, params):
+    def __init__(self):
         '''
         Constructor
         '''
+    def compute_report(self, report):
+        list_report =[]
+        for i in report.convention_errors:
+            dict_temp = {}
+            dict_temp["error_type"] = "student"
+            dict_temp["traceback"] = None #Si necessaire l'ajouter au RunReport
+            dict_temp["infos"] = {"student_error_type":"convention",
+                                    "severity" : i.severity,
+                                    "description":i.error_details()} # Il manque les lignes?
+            list_report.append(dict_temp)
+
+        for i in report.compilation_errors:
+            dict_temp = {}
+            dict_temp["error_type"] = "compilation"
+            dict_temp["traceback"] = None #Si necessaire l'ajouter au RunReport
+            dict_temp["infos"] = {"student_error_type":"compilation",
+                                    "severity" : i.severity,
+                                    "description":i.error_details()} # Il manque les lignes?
+            list_report.append(dict_temp)
+
+        for i in report.execution_errors:
+            dict_temp = {}
+            dict_temp["error_type"] = "execution"
+            dict_temp["traceback"] = None #Si necessaire l'ajouter au RunReport
+            dict_temp["infos"] = {"student_error_type":"execution",
+                                    "severity" : i.severity,
+                                    "description":i.error_details()} # Il manque les lignes?
+            list_report.append(dict_temp)
+        return list_report
+
         

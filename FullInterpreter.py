@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 27 10:50:13 2017
-
-@author: 3605386
-"""
 from multiprocessing import Process
 import sys
 import json
@@ -13,11 +7,7 @@ from CheckAST import CheckAST
 from Compiler import Compiler
 from Executor import Executor
 from Reporter import Reporter
-
-class StudentExecProcess(Process):
-
-
-
+class FullExecProcess(Process):
     def __init__(self, prot,pipe,compiler,check_ast,parser,executor):
         Process.__init__(self)
         self.prot = prot
@@ -26,12 +16,11 @@ class StudentExecProcess(Process):
         self.parser=parser
         self.executor=executor
         self.pipe=pipe
-        
-
+    
     def run(self):
 
         self.compileExec(self.prot)
-        
+
     def _computeOutExec(self,contenu, typ):
         if(typ == "eval"):
             error = False
@@ -64,12 +53,6 @@ class StudentExecProcess(Process):
                 error = True
                 retcontent["report"]=reporter.compute_report(report)
                 return retcontent,error
-            #check
-            ast,report=self.check_ast.check(ast,report)
-            if(ast==None):
-                error=True
-                retcontent["report"]=reporter.compute_report(report)
-                return retcontent,error
             #compilee
         
             code,report=self.compiler.compile(ast,report,typ,contenu["filename"])
@@ -88,10 +71,7 @@ class StudentExecProcess(Process):
             retcontent["stdout"]=out_str
             retcontent["report"]=reporter.compute_report(report)
             return retcontent,error
-            
-         
-        
-        
+
     def compileExec(self,prot):
         print("compileexec")
         while(True):
@@ -127,16 +107,13 @@ class StudentExecProcess(Process):
                 self.pipe.send(jsonRetour.encode("Utf8"))
                 print("json envoyé")
             prot={}
-                 
 
-class StudentInterpreter():
+class FullInterpreter():
     def __init__(self, prot, pipe,compiler,check_ast,parser,executor):
         self.pipe=pipe
         self.compiler=compiler
         self.check_ast=check_ast
         self.executor=executor
         self.parser=parser
-        self.t1 = StudentExecProcess(prot,pipe,compiler,check_ast,parser,executor)
+        self.t1 = FullExecProcess(prot,pipe,compiler,check_ast,parser,executor)
         self.t1.start()
-  
-        

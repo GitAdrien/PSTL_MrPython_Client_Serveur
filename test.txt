@@ -1,4 +1,5 @@
 print('hello boys!!')
+a = 3
 if (True) :
     print("c'est un bingo")
     

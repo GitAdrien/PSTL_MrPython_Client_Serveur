@@ -34,13 +34,3 @@ class Compiler(object):
             return None,report
         #TODO: ajouter les erreurs
         return code,report
-
-#f=open("test.txt")
-#source=f.read()
-#f.close()  
-#report=RunReport() 
-
-#p=Parser(source,report,"test.txt")
-#ast,report=p.parse()
-#c=Compiler(ast,report,"exec","test.txt")
-#c.compile()
