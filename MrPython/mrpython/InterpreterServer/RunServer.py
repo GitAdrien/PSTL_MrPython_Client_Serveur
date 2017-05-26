@@ -16,6 +16,7 @@ from InterpreterServer.Parser import Parser
 from InterpreterServer.Compiler import Compiler
 from InterpreterServer.CheckAST import CheckAST
 from InterpreterServer.Executor import Executor
+import uuid
 
 class RunServer():
     def __init__(self):
@@ -35,6 +36,12 @@ class RunServer():
         self.connexion, addresse = serverSocket.accept()
         os.remove("config.txt")
         logger.info("Listening on %s:%s..." % (host, str(port)))
+        self.server_con, self.interpreter_conn = Pipe()
+        self.parser = None
+        self.compiler = None
+        self.check_ast = None
+        self.executor = None
+        self.waitproc=None
         self.serverLoop()
     def waitResult(self, pipe):
         res = pipe.recv()
@@ -42,13 +49,7 @@ class RunServer():
 
     def serverLoop(self):
 
-        server_con, interpreter_conn = Pipe()
-        parser = Parser()
-        compiler = Compiler()
-        check_ast = CheckAST()
-        executor = Executor()
-        self.interpreter = StudentInterpreter({}, interpreter_conn, \
-        compiler, check_ast, parser, executor)
+        self.newInterpreter(True)
         while True:
             data = self.connexion.recv(self.buffer_size) #attend trop à la récéption
             if(not data):
@@ -65,43 +66,63 @@ class RunServer():
                     logger.error("miss session_id or msg_id or protocol_version key")
                 elif(self.interpreter.t1.is_alive()):
                     self.interpreter.t1.terminate()
-                    retour={}
-                    retour["msg_type"] = "interrupt_success"
-                    retour["session_id"] =  prot["session_id"]
-                    retour["msg_id"] = prot["msg_id"] + 1
-                    retour["protocol_version"] = prot ["protocol_version"]
-                    retour["content"] = {}
-                    jsonRetour = json.dumps(retour)
-                    self.connexion.send(jsonRetour.encode("Utf8"))
+                    if(self.waitproc.is_alive()):
+                        self.waitproc.terminate()
+                    self.interrupt_return(True,prot)
                 else:
-                    retour = {}
-                    retour["msg_type"] = "interrupt_fail"
-                    retour["session_id"] = prot["session_id"]
-                    retour["msg_id"] = prot["msg_id"]+1
-                    retour["protocol_version"] = prot["protocol_version"]
-                    retour["content"] = {}
-                    jsonRetour = json.dumps(retour)
-                    self.connexion.send(jsonRetour.encode("Utf8"))
+                    self.interrupt_return(False,prot)
+            
             elif(prot["msg_type"]=="exec"):
                 self.interpreter.t1.terminate()
                 if(not("content" in prot.keys()) or not("mode" in prot["content"].keys())):
                     logger.error("miss content key or mode key")
                 elif(prot["content"]["mode"] == "full"):
-                    self.interpreter = FullInterpreter(prot, interpreter_conn, compiler, check_ast, parser, executor)
-                    waitproc = Process(target=self.waitResult, args=(server_con,))
-                    waitproc.start()
+                    self.newInterpreter(False,prot)
+                    self.waitproc=Process(target=self.waitResult,args=(self.server_con,))
+                    self.waitproc.start()
                 elif(prot["content"]["mode"] == "student"):
-                    self.interpreter = StudentInterpreter(prot, interpreter_conn, compiler, check_ast, parser, executor)
-                    waitproc = Process(target=self.waitResult,args=(server_con,))
-                    waitproc.start()
+                    self.newInterpreter(True,prot)
+                    self.waitproc=Process(target=self.waitResult,args=(self.server_con,))
+                    self.waitproc.start()
                 else:
                     logger.error("unknown mode")
             elif(prot["msg_type"] == "eval"):
-                server_con.send(prot)
-                waitproc = Process(target=self.waitResult, args=(server_con,))
-                waitproc.start()
+                self.server_con.send(prot)
+                self.waitproc = Process(target=self.waitResult, args=(self.server_con,))
+                self.waitproc.start()
             else:
                 logger.error("msg_type error")
+                
+    def newInterpreter(self,student,prot=None):
+        
+        self.parser = Parser()
+        self.compiler = Compiler()
+        
+        self.executor = Executor()
+        if(student):
+            self.check_ast = CheckAST()
+            if(prot is None):
+                self.interpreter = StudentInterpreter({}, self.interpreter_conn,self.compiler, self.check_ast, self.parser, self.executor)
+            else:
+                self.interpreter = StudentInterpreter(prot, self.interpreter_conn,self.compiler, self.check_ast, self.parser, self.executor) 
+        else:
+            if(prot is None):
+                self.interpreter = FullInterpreter({}, self.interpreter_conn,self.compiler, self.parser, self.executor)
+            else:
+                self.interpreter = FullInterpreter(prot, self.interpreter_conn,self.compiler,self.parser, self.executor) 
+                
+    def interrupt_return(self,success,prot):
+        retour={}
+        if(success):
+            retour["msg_type"]="interrupt_success"
+        else:
+            retour["msg_type"]="interrupt_fail" 
+        retour["session_id"]=  prot["session_id"]
+        retour["msg_id"]=uuid.uuid1().int
+        retour["protocol_version"]=prot ["protocol_version"]
+        retour["content"]={}
+        jsonRetour = json.dumps(retour)
+        self.connexion.send(jsonRetour.encode("Utf8"))
 
 if __name__ == "__main__":
     server = RunServer()

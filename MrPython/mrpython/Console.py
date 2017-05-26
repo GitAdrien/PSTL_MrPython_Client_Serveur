@@ -337,18 +337,19 @@ class Console:
             self.write(prot["content"]["report"]["header"], tags=('run'))
             for i in prot["content"]["report"]["errors"]:
                 self.write(i["infos"]["severity"]+ ": line "+str(i["infos"]["severity"]))
-                self.write(str(i["infos"]["description"]), tags=(i["infos"]["severity"]))
+                self.write(str(i["infos"]["description"]),tags=(i["infos"]["severity"]))
             self.write(str(prot["content"]["stdout"]), tags=("stdout"))
-            self.write(prot["content"]["report"]["footer"], tags=('run'))
+            if(prot["msg_type"] == "eval_success"):
+                self.write(prot["content"]["data"], tags=('normal'))
+            self.write(prot["content"]["report"]["footer"], tags = ('run'))
         elif(prot["msg_type"] == "interrupt_success"):
             self.write("le programme a été correctement interrompu", tags=("normal"))
         else:
             self.write(prot["content"]["report"]["header"], tags=('error'))
             for i in prot["content"]["report"]["errors"]:
-                self.write(i["infos"]["severity"] + ": line " + str(i["infos"]["lines"]),
-                           tags=(i["infos"]["severity"]))
-                self.write(str(i["infos"]["description"]), tags=(i["infos"]["severity"]))
-            self.write(prot["content"]["report"]["footer"], tags=('error'))
+                self.write(i["infos"]["severity"]+ ": line "+str(i["infos"]["lines"]), tags=(i["infos"]["severity"]))
+                self.write(str(i["infos"]["description"]),tags=(i["infos"]["severity"]))
+            self.write(prot["content"]["report"]["footer"], tags = ('error'))
 
 
     def run(self, filename):
