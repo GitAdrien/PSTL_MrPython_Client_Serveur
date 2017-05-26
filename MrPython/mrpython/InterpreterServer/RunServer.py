@@ -34,11 +34,9 @@ class RunServer():
         logger.info("Listen")
         self.connexion, addresse = serverSocket.accept()
         os.remove("config.txt")
-        logger.warning("accept")
         logger.info("Listening on %s:%s..." % (host, str(port)))
         self.serverLoop()
     def waitResult(self, pipe):
-        pass
         res = pipe.recv()
         self.connexion.send(res)
 
@@ -68,15 +66,15 @@ class RunServer():
                 elif(self.interpreter.t1.is_alive()):
                     self.interpreter.t1.terminate()
                     retour={}
-                    retour["msg_type"]="interrupt_success"
-                    retour["session_id"]=  prot["session_id"]
-                    retour["msg_id"]=prot["msg_id"]+1
-                    retour["protocol_version"]=prot ["protocol_version"]
-                    retour["content"]={}
+                    retour["msg_type"] = "interrupt_success"
+                    retour["session_id"] =  prot["session_id"]
+                    retour["msg_id"] = prot["msg_id"] + 1
+                    retour["protocol_version"] = prot ["protocol_version"]
+                    retour["content"] = {}
                     jsonRetour = json.dumps(retour)
                     self.connexion.send(jsonRetour.encode("Utf8"))
                 else:
-                    retour={}
+                    retour = {}
                     retour["msg_type"] = "interrupt_fail"
                     retour["session_id"] = prot["session_id"]
                     retour["msg_id"] = prot["msg_id"]+1
@@ -89,23 +87,21 @@ class RunServer():
                 if(not("content" in prot.keys()) or not("mode" in prot["content"].keys())):
                     logger.error("miss content key or mode key")
                 elif(prot["content"]["mode"] == "full"):
-                    self.interpreter = FullInterpreter(prot, interpreter_conn,compiler,check_ast,parser,executor)
-                    waitproc=Process(target=self.waitResult,args=(server_con,))
+                    self.interpreter = FullInterpreter(prot, interpreter_conn, compiler, check_ast, parser, executor)
+                    waitproc = Process(target=self.waitResult, args=(server_con,))
                     waitproc.start()
                 elif(prot["content"]["mode"] == "student"):
-                    self.interpreter = StudentInterpreter(prot, interpreter_conn,compiler,check_ast,parser,executor)
-                    waitproc=Process(target=self.waitResult,args=(server_con,))
+                    self.interpreter = StudentInterpreter(prot, interpreter_conn, compiler, check_ast, parser, executor)
+                    waitproc = Process(target=self.waitResult,args=(server_con,))
                     waitproc.start()
                 else:
                     logger.error("unknown mode")
             elif(prot["msg_type"] == "eval"):
                 server_con.send(prot)
-                waitproc=Process(target=self.waitResult,args=(server_con,))
+                waitproc = Process(target=self.waitResult, args=(server_con,))
                 waitproc.start()
             else:
                 logger.error("msg_type error")
-            
-                
 
 if __name__ == "__main__":
     server = RunServer()

@@ -17,20 +17,14 @@ class Compiler(object):
         '''
         Constructor
         '''
-        
-    
-    def compile(self,ast,report,compil_type,filename):
+
+    def compile(self, ast, report, compil_type, filename):
         try:
-            code = compile(ast,filename, compil_type)
+            code = compile(ast, filename, compil_type)
         except SyntaxError as err:
             report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
-            print("compileerror")
-            print(report.compilation_errors[0].error_details())
-            return None,report
+            return None, report
         except ValueError as err:
             report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
-            print("compileerror")
-            print(report.compilation_errors[0].error_details())
-            return None,report
-        #TODO: ajouter les erreurs
-        return code,report
+            return None, report
+        return code, report

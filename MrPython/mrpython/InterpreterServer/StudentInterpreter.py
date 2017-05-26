@@ -33,7 +33,7 @@ class StudentExecProcess(Process):
 
     def run(self):
         self.compileExec(self.prot)
-        
+
     def _computeOutExec(self, contenu, typ):
 
         if (typ == "eval"):

@@ -15,8 +15,7 @@ class CheckAST(object):
         Constructor
         '''
         pass
-        
-    
-    def check(self,ast,report):
-        return ast,report
+
+    def check(self, ast, report):
+        return ast, report
         
