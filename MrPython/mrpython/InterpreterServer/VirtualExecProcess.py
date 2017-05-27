@@ -19,36 +19,28 @@ import uuid
 class VirtualExecProcess(Process):
     def __init__(self):
         Process.__init__(self)
-        
-        
-        
-    def compileExec(self,prot,student):
-        print("compileexec")
+
+    def compileExec(self, prot, student):
         while(True):
             error = False
-            ret={}
-            if(prot=={}):
+            ret = {}
+            if(prot == {}):
                 prot = self.pipe.recv()
             if(prot["msg_type"] == "exec"):
-            
-                ret["content"], error = self._computeOutExec(prot["content"], "exec",student)
+                ret["content"], error = self._computeOutExec(prot["content"], "exec", student)
                 ret["session_id"] = prot["session_id"]
-                ret["msg_id"]=uuid.uuid1().int
+                ret["msg_id"] = uuid.uuid1().int
                 if(error == True):
                     ret["msg_type"] = "exec_error"
                 else:
                     ret["msg_type"] = "exec_success"
                 ret["protocol_version"] = prot["protocol_version"]
                 jsonRetour = json.dumps(ret)
-                #mettre sur le pipe : le truc dumpé
                 self.pipe.send(jsonRetour.encode("Utf8"))
             elif(prot["msg_type"] == "eval"):
-                    #TODO : mode eval
-                print("_compileExec eval")
-                ret["content"], error = self._computeOutExec(prot["content"], "eval",student)
-                print("compute_eval")
+                ret["content"], error = self._computeOutExec(prot["content"], "eval", student)
                 ret["session_id"] = prot["session_id"]
-                ret["msg_id"]=uuid.uuid1().int
+                ret["msg_id"] = uuid.uuid1().int
                 if(error == True):
                     ret["msg_type"] = "eval_error"
                 else:
@@ -56,10 +48,9 @@ class VirtualExecProcess(Process):
                 ret["protocol_version"] = prot["protocol_version"]
                 jsonRetour = json.dumps(ret)
                 self.pipe.send(jsonRetour.encode("Utf8"))
-                print("json envoyé")
-            prot={}
-            
-    def _computeOutExec(self,contenu, typ,student):
+            prot = {}
+
+    def _computeOutExec(self, contenu, typ,student):
         if(student):
             logger = logging.getLogger("StudentInterpreter")
         else:
@@ -69,47 +60,41 @@ class VirtualExecProcess(Process):
                 logger.error("miss key 'expr' or 'filename' in contenu")
             else:
                 error = False
-                retcontent={}
-                report=self.init_report(False,contenu)
+                retcontent = {}
+                report = self.init_report(False, contenu)
                 reporter = Reporter()
-                
                 #compile
-                code,report=self.compiler.compile(contenu["expr"],report,typ,contenu["filename"])
+                code, report=self.compiler.compile(contenu["expr"], report, typ, contenu["filename"])
                 if(code==None):
-                    error=True
-                    retcontent["report"]=reporter.compute_report(report)
-                    return retcontent,error
-                
+                    error = True
+                    retcontent["report"] = reporter.compute_report(report)
+                    return retcontent, error
                 #evaluate
-                data,report,out_str,err_str,error=self.executor.evaluate(code,report)
-                print(data)
+                data, report, out_str, err_str, error = self.executor.evaluate(code, report)
                 if(error==True):
-                    retcontent["report"]=reporter.compute_report(report)
-                    return retcontent,error
-                    
+                    retcontent["report"] = reporter.compute_report(report)
+                    return retcontent, error
                 #retour
-                retcontent["stderr"]=err_str
-                retcontent["stdout"]=out_str
-                retcontent["data"]=data
-                retcontent["report"]=reporter.compute_report(report)
-                return retcontent,error
+                retcontent["stderr"] = err_str
+                retcontent["stdout"] = out_str
+                retcontent["data"] = data
+                retcontent["report"] = reporter.compute_report(report)
+                return retcontent, error
                 
         elif(typ == "exec"):
             if(not("source" in contenu.keys()) or not("filename" in contenu.keys())):
                 logger.error("miss key 'source' or 'filename' in contenu")
             else:
                 error = False
-                retcontent={}
-                report=self.init_report(True,contenu)
+                retcontent = {}
+                report = self.init_report(True, contenu)
                 reporter = Reporter()
-                
                 #Parser
-                ast,report = self.parser.parse(contenu["source"],report,contenu["filename"])
-                if(ast==None):
+                ast, report = self.parser.parse(contenu["source"], report, contenu["filename"])
+                if(ast == None):
                     error = True
-                    retcontent["report"]=reporter.compute_report(report)
-                    return retcontent,error
-                    
+                    retcontent["report"] = reporter.compute_report(report)
+                    return retcontent, error
                 #check
                 if(student):
                     ast, report = self.parser.parse(contenu["source"], report, contenu["filename"])
@@ -117,37 +102,37 @@ class VirtualExecProcess(Process):
                         error = True
                         retcontent["report"] = reporter.compute_report(report)
                         return retcontent, error
-                
+
                 #compile
-                code,report=self.compiler.compile(ast,report,typ,contenu["filename"])
+                code, report = self.compiler.compile(ast, report, typ, contenu["filename"])
                 if(code==None):
                     error=True
-                    retcontent["report"]=reporter.compute_report(report)
-                    return retcontent,error
-                    
+                    retcontent["report"] = reporter.compute_report(report)
+                    return retcontent, error
+
                 #executor
-                error,report,out_str,err_str=self.executor.execute(code,report)
-                print(error)
-                print("execution réussie")
+                error, report, out_str, err_str = self.executor.execute(code, report)
                 if(error):
-                    retcontent["report"]=reporter.compute_report(report)
-                    return retcontent,error
+                    retcontent["report"] = reporter.compute_report(report)
+                    return retcontent, error
                     
-                retcontent["stderr"]=err_str
-                retcontent["stdout"]=out_str
-                retcontent["report"]=reporter.compute_report(report)
-                return retcontent,error
-            
+                retcontent["stderr"] = err_str
+                retcontent["stdout"] = out_str
+                retcontent["report"] = reporter.compute_report(report)
+                return retcontent, error
+
     def init_report(self,execute,contenu):
-            report = RunReport()
-            if(execute):
-                begin_report = "=== " + tr("Interpretation of: ") + "'" + os.path.basename(contenu["filename"]) + "' ===\n"
-            else:
-                begin_report = "=== " + tr("Evaluating: ") + "'" + contenu["expr"] + "' ===\n"
-            report.set_header(begin_report)
-            end_report = "\n" + ('=' * len(begin_report)) + "\n\n"
-            report.set_footer(end_report)
-            return report
+        report = RunReport()
+        if(execute):
+            begin_report = "=== " + tr("Interpretation of: ") + "'" +\
+             os.path.basename(contenu["filename"]) + "' ===\n"
+        else:
+            begin_report = "=== " + tr("Evaluating: ") + "'" + contenu["expr"] + "' ===\n"
+        report.set_header(begin_report)
+        end_report = "\n" + ('=' * len(begin_report)) + "\n\n"
+        report.set_footer(end_report)
+        return report
+
     def run(self):
         raise NotImplementedError
             

@@ -19,10 +19,12 @@ class Parser():
             report.add_compilation_error('error', "Bad indentation", err.lineno, err.offset)
             return None, report
         except SyntaxError as err:
-            report.add_compilation_error('error', "Syntax error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Syntax error",
+                                         err.lineno, err.offset, details=err.text)
             return None, report
         except Exception as err:
             typ, exc, tb = sys.exc_info()
-            report.add_compilation_error('error', str(typ), err.lineno, err.offset, details=str(err))
+            report.add_compilation_error('error', str(typ),
+                                         err.lineno, err.offset, details=str(err))
             return None, report
         return res, report

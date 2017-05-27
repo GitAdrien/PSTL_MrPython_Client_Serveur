@@ -22,9 +22,11 @@ class Compiler(object):
         try:
             code = compile(ast, filename, compil_type)
         except SyntaxError as err:
-            report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Compile error", err.lineno,
+                                         err.offset, details=err.text)
             return None, report
         except ValueError as err:
-            report.add_compilation_error('error', "Compile error", err.lineno, err.offset, details=err.text)
+            report.add_compilation_error('error', "Compile error",
+                                         err.lineno, err.offset, details=err.text)
             return None, report
         return code, report

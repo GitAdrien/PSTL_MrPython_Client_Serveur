@@ -41,7 +41,7 @@ class RunServer():
         self.compiler = None
         self.check_ast = None
         self.executor = None
-        self.waitproc=None
+        self.waitproc = None
         self.serverLoop()
     def waitResult(self, pipe):
         res = pipe.recv()
@@ -68,21 +68,21 @@ class RunServer():
                     self.interpreter.t1.terminate()
                     if(self.waitproc.is_alive()):
                         self.waitproc.terminate()
-                    self.interrupt_return(True,prot)
+                    self.interrupt_return(True, prot)
                 else:
-                    self.interrupt_return(False,prot)
+                    self.interrupt_return(False, prot)
             
             elif(prot["msg_type"]=="exec"):
                 self.interpreter.t1.terminate()
                 if(not("content" in prot.keys()) or not("mode" in prot["content"].keys())):
                     logger.error("miss content key or mode key")
                 elif(prot["content"]["mode"] == "full"):
-                    self.newInterpreter(False,prot)
-                    self.waitproc=Process(target=self.waitResult,args=(self.server_con,))
+                    self.newInterpreter(False, prot)
+                    self.waitproc = Process(target=self.waitResult, args=(self.server_con,))
                     self.waitproc.start()
                 elif(prot["content"]["mode"] == "student"):
-                    self.newInterpreter(True,prot)
-                    self.waitproc=Process(target=self.waitResult,args=(self.server_con,))
+                    self.newInterpreter(True, prot)
+                    self.waitproc = Process(target=self.waitResult, args=(self.server_con,))
                     self.waitproc.start()
                 else:
                     logger.error("unknown mode")
@@ -92,35 +92,39 @@ class RunServer():
                 self.waitproc.start()
             else:
                 logger.error("msg_type error")
-                
+
     def newInterpreter(self,student,prot=None):
-        
         self.parser = Parser()
         self.compiler = Compiler()
-        
         self.executor = Executor()
         if(student):
             self.check_ast = CheckAST()
             if(prot is None):
-                self.interpreter = StudentInterpreter({}, self.interpreter_conn,self.compiler, self.check_ast, self.parser, self.executor)
+                self.interpreter = StudentInterpreter({}, self.interpreter_conn,
+                                                      self.compiler, self.check_ast,
+                                                      self.parser, self.executor)
             else:
-                self.interpreter = StudentInterpreter(prot, self.interpreter_conn,self.compiler, self.check_ast, self.parser, self.executor) 
+                self.interpreter = StudentInterpreter(prot, self.interpreter_conn,
+                                                      self.compiler, self.check_ast,
+                                                      self.parser, self.executor)
         else:
             if(prot is None):
-                self.interpreter = FullInterpreter({}, self.interpreter_conn,self.compiler, self.parser, self.executor)
+                self.interpreter = FullInterpreter({}, self.interpreter_conn,
+                                                   self.compiler, self.parser, self.executor)
             else:
-                self.interpreter = FullInterpreter(prot, self.interpreter_conn,self.compiler,self.parser, self.executor) 
-                
+                self.interpreter = FullInterpreter(prot, self.interpreter_conn,
+                                                   self.compiler, self.parser, self.executor) 
+
     def interrupt_return(self,success,prot):
-        retour={}
+        retour = {}
         if(success):
-            retour["msg_type"]="interrupt_success"
+            retour["msg_type"] = "interrupt_success"
         else:
-            retour["msg_type"]="interrupt_fail" 
-        retour["session_id"]=  prot["session_id"]
-        retour["msg_id"]=uuid.uuid1().int
-        retour["protocol_version"]=prot ["protocol_version"]
-        retour["content"]={}
+            retour["msg_type"] = "interrupt_fail"
+        retour["session_id"] = prot["session_id"]
+        retour["msg_id"] = uuid.uuid1().int
+        retour["protocol_version"] = prot["protocol_version"]
+        retour["content"] = {}
         jsonRetour = json.dumps(retour)
         self.connexion.send(jsonRetour.encode("Utf8"))
 

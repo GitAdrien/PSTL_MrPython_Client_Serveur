@@ -23,8 +23,7 @@ class StudentExecProcess(VirtualExecProcess):
 
 
     def run(self):
-        self.compileExec(self.prot,True)
-  
+        self.compileExec(self.prot, True)
 
 class StudentInterpreter():
     def __init__(self, prot, pipe, compiler, check_ast, parser, executor):
