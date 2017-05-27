@@ -23,7 +23,7 @@ class Executor(object):
         self.locals = {} 
         self.fst_stdout = None
         self.fst_stderr = None
-     
+    """ 
     def execute(self, code, report):
         '''
         Exécute le programme
@@ -84,7 +84,7 @@ class Executor(object):
         err_string = sys.stderr.read()
         self.std_reset()
         return(False, report, out_string, err_string)
-    
+    """
     def _extract_error_details(self, err):
         err_str = err.args[0]
         start = err_str.find("'") + 1
@@ -92,14 +92,17 @@ class Executor(object):
         details = err_str[start:end]
         return details
     
-    def evaluate(self,code,report):
+    def execute(self,code,report,exe):
         '''
         Evalue le programme
         Renvoie les valeurs de stdin et stdout et la valeur de l'expression
         '''
         self.std_redirect()
         try:
-            data=eval(code, self.locals, self.locals)            
+            if(exe):
+                exec(code, self.locals, self.locals)
+            else:
+                data=eval(code, self.locals, self.locals)            
         except TypeError as err:
             self.std_reset()
             a, b, tb = sys.exc_info()
@@ -123,7 +126,7 @@ class Executor(object):
             a, b, tb = sys.exc_info()
             filename, lineno, file_type, line = traceback.extract_tb(tb)[-1]
             report.add_execution_error('error', tr("Division by zero"), lineno)
-            return (None, sreport, None, None, True)
+            return (None, report, None, None, True)
         except AssertionError:
             self.std_reset()
             a, b, tb = sys.exc_info()
@@ -150,9 +153,11 @@ class Executor(object):
         out_string = sys.stdout.read() # calcul de la sortie
         err_string = sys.stderr.read()
         self.std_reset()
-        
-        return(data,report,out_string,err_string,False)
-        
+        if(not exe):
+            return(data,report,out_string,err_string,False)
+        else:
+            return(None,report,out_string,err_string,False)
+            
     def std_redirect(self):
             self.fst_stdout = sys.stdout
             self.fst_stderr = sys.stderr

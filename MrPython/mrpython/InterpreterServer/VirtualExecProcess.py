@@ -70,7 +70,7 @@ class VirtualExecProcess(Process):
                     retcontent["report"] = reporter.compute_report(report)
                     return retcontent, error
                 #evaluate
-                data, report, out_str, err_str, error = self.executor.evaluate(code, report)
+                data, report, out_str, err_str, error = self.executor.execute(code, report,False)
                 if(error==True):
                     retcontent["report"] = reporter.compute_report(report)
                     return retcontent, error
@@ -111,7 +111,7 @@ class VirtualExecProcess(Process):
                     return retcontent, error
 
                 #executor
-                error, report, out_str, err_str = self.executor.execute(code, report)
+                data, report, out_str, err_str,error = self.executor.execute(code, report,True)
                 if(error):
                     retcontent["report"] = reporter.compute_report(report)
                     return retcontent, error
