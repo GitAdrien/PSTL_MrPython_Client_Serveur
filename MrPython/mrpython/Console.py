@@ -125,6 +125,7 @@ class Console:
         """
         Create and configure the shell (the text widget that gives informations
         and the interactive shell)
+        Starts the RunServer and connects to it
         """
         self.app = app
         # Creating output console
@@ -246,7 +247,7 @@ class Console:
 
 
     def evaluate_action(self, *args):
-        """ Evaluate the expression in the input console """
+        """ Sends the expression in the input_console for the server to evaluate it; waits for the result and displays it"""
         #output_file = open('interpreter_output', 'w+')
         #original_stdout = sys.stdout
         #sys.stdout = output_file
@@ -295,9 +296,15 @@ class Console:
         self.eval_button.config(state=stat)
 
     def close_server(self):
+        '''
+        Closes connection with the server
+        '''
         self.mySocket.close()
 
     def _connect_server(self):
+        '''
+        Connects to the server
+        '''
         HOST = socket.gethostname()
         mon_fichier_config = open("config.txt", "r")
         PORT = int(mon_fichier_config.read())
@@ -312,6 +319,9 @@ class Console:
             sys.exit()
 
     def _compute_json(self, source, filename, mode, exec_or_eval):
+        '''
+        Creates the message that will be sent to the server
+        '''
         result = {}
         if(exec_or_eval == "exec"):
             self.session_id = uuid.uuid1().int
@@ -333,6 +343,9 @@ class Console:
         return result
 
     def write_report2(self, prot):
+        '''
+        Writes a report in the output console
+        '''
         if(prot["msg_type"] == "exec_success" or prot["msg_type"] == "eval_success" ):
             self.write(prot["content"]["report"]["header"], tags=('run'))
             for i in prot["content"]["report"]["errors"]:
@@ -354,7 +367,7 @@ class Console:
 
     def run(self, filename):
 
-        """ Run the program in the current editor : execute, print results """
+        """Sends a program for the server to run it; waits for the result and displays it"""
         # Reset the output first
         self.reset_output()
         # A new PyInterpreter is created each time code is run
@@ -381,6 +394,9 @@ class Console:
             self.app.run_button.bind("<1>", self.app.interrupt) #change le bind
 
     def interrupt(self):
+        """ Sends and interrupt request to the server
+        Changes the execution button and writes a message on the output_console when it's done
+        """
         result = self._compute_json("","","","interrupt")
         docJson = json.dumps(result)
         self.mySocket.send(docJson.encode("Utf8"))
@@ -459,6 +475,7 @@ class Console:
         self.undo.reset_undo()
 
     def wait_and_write(self, pipe):
+        """Awaits an answer from the server and registers it"""
         msgServeur = self.mySocket.recv(1024).decode("Utf8")
         if(not msgServeur):
             self.mySocket.close()

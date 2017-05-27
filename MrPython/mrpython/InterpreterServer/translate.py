@@ -40,6 +40,9 @@ TRANSLATOR_DICT = {
 }
 
 def tr(msg):
+    '''
+    Translates a string in french according to the translator_dict
+    '''
     global TRANSLATOR_LOCALE_KEY
 
     #print("tr msg=" + msg)
