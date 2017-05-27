@@ -19,7 +19,13 @@ from InterpreterServer.Executor import Executor
 import uuid
 
 class RunServer():
+    '''
+    Server which treats client's requests according to the protocol
+    '''
     def __init__(self):
+        '''
+        Initializes the server's socket accept connection from the client and starts the waiting loop
+        '''
         logger = logging.getLogger("run_server")
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = socket.gethostname()
@@ -44,11 +50,16 @@ class RunServer():
         self.waitproc = None
         self.serverLoop()
     def waitResult(self, pipe):
+        '''
+        Waits the result from the interpreter and sends it to the client
+        '''
         res = pipe.recv()
         self.connexion.send(res)
 
     def serverLoop(self):
-
+        '''
+        Waits for requests from the client and treat those requests
+        '''
         self.newInterpreter(True)
         while True:
             data = self.connexion.recv(self.buffer_size) #attend trop à la récéption
@@ -94,6 +105,9 @@ class RunServer():
                 logger.error("msg_type error")
 
     def newInterpreter(self,student,prot=None):
+        '''
+        Creates a new interpreter
+        '''
         self.parser = Parser()
         self.compiler = Compiler()
         self.executor = Executor()
@@ -116,6 +130,9 @@ class RunServer():
                                                    self.compiler, self.parser, self.executor) 
 
     def interrupt_return(self,success,prot):
+        '''
+        Answers to an interrupt request from the client 
+        '''
         retour = {}
         if(success):
             retour["msg_type"] = "interrupt_success"

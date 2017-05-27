@@ -6,7 +6,7 @@ Created on 27 avr. 2017
 
 class CheckAST(object):
     '''
-    Vérifications de l'AST pour le mode student
+    Class for type checking(Student Mode Only)
     '''
 
 

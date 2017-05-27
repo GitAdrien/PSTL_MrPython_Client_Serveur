@@ -12,7 +12,7 @@ from InterpreterServer.translate import tr
 
 class Executor(object):
     '''
-    classe d'execution
+    Execution and evaluation class
     '''
 
 
@@ -23,68 +23,7 @@ class Executor(object):
         self.locals = {} 
         self.fst_stdout = None
         self.fst_stderr = None
-    """ 
-    def execute(self, code, report):
-        '''
-        Exécute le programme
-        Renvoie un booléen indiquant une erreur ainsi que les valeurs de stdin et stdout
-        '''
-        self.std_redirect()
-        try:
-            exec(code, self.locals, self.locals)
-        except TypeError as err:
-            self.std_reset()
-            a, b, tb = sys.exc_info()
-            filename, lineno, file_type, line = traceback.extract_tb(tb)[-1]
-            err_str = self._extract_error_details(err)
-            report.add_execution_error('error', tr("Type error"), lineno, details=str(err))
-            return (True, report, None, None)
-        except NameError as err:
-            self.std_reset()
-            a, b, tb = sys.exc_info() # Get the traceback object
-            # Extract the information for the traceback corresponding to the error
-            # inside the source code : [0] refers to the result = exec(code)
-            # traceback, [1] refers to the last error inside code
-            filename, lineno, file_type, line = traceback.extract_tb(tb)[-1]
-            err_str = self._extract_error_details(err)
-            report.add_execution_error('error', tr("Name error (unitialized variable?)"),
-                                       lineno, details=err_str)
-            return (True, report, None, None)
-        except ZeroDivisionError:
-            self.std_reset()
-            a, b, tb = sys.exc_info()
-            filename, lineno, file_type, line = traceback.extract_tb(tb)[-1]
-            report.add_execution_error('error', tr("Division by zero"), lineno)
-            return (True, report, None, None)
-        except AssertionError:
-            self.std_reset()
-            a, b, tb = sys.exc_info()
-            lineno = None
-            traceb = traceback.extract_tb(tb)
-            if len(traceb) > 1:
-                filename, lineno, file_type, line = traceb[-1]
-            report.add_execution_error('error', tr("Assertion error (failed test?)"), lineno)
-            return (True, report, None, None)
-        except Exception as err:
-
-            self.std_reset()
-            a, b, tb = sys.exc_info() # Get the traceback object
-            # Extract the information for the traceback corresponding to the error
-            # inside the source code : [0] refers to the result = exec(code)
-            # traceback, [1] refers to the last error inside code
-            lineno = None
-            traceb = traceback.extract_tb(tb)
-            if len(traceb) > 1:
-                filename, lineno, file_type, line = traceb[-1]
-            report.add_execution_error('error', a.__name__, lineno, details=str(err))
-            return (True, report, None, None)
-        sys.stdout.seek(0) #remise à zero des deux fichier afin de les lires
-        sys.stderr.seek(0)
-        out_string = sys.stdout.read() # calcul de la sortie
-        err_string = sys.stderr.read()
-        self.std_reset()
-        return(False, report, out_string, err_string)
-    """
+   
     def _extract_error_details(self, err):
         err_str = err.args[0]
         start = err_str.find("'") + 1
@@ -94,8 +33,8 @@ class Executor(object):
     
     def execute(self,code,report,exe):
         '''
-        Evalue le programme
-        Renvoie les valeurs de stdin et stdout et la valeur de l'expression
+        Execute or evaluate the code
+        returns stdin, stdout and if it's an evaluation, returns data
         '''
         self.std_redirect()
         try:

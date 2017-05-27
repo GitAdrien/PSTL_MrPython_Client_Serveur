@@ -21,6 +21,9 @@ class VirtualExecProcess(Process):
         Process.__init__(self)
 
     def compileExec(self, prot, student):
+        '''
+        Compute the result of a "exec" or "eval" request and send it to the server
+        '''
         while(True):
             error = False
             ret = {}
@@ -51,6 +54,9 @@ class VirtualExecProcess(Process):
             prot = {}
 
     def _computeOutExec(self, contenu, typ,student):
+        '''
+        Run a code or an expression and return the result 
+        '''
         if(student):
             logger = logging.getLogger("StudentInterpreter")
         else:
@@ -122,6 +128,9 @@ class VirtualExecProcess(Process):
                 return retcontent, error
 
     def init_report(self,execute,contenu):
+        '''
+        Initialise a RunReport with corresponding header and footer
+        '''
         report = RunReport()
         if(execute):
             begin_report = "=== " + tr("Interpretation of: ") + "'" +\

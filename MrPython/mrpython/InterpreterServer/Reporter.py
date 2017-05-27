@@ -6,7 +6,7 @@ Created on 28 avr. 2017
 
 class Reporter(object):
     '''
-    Modifie un rapport pour le transformer en dictionnaire json-serializable
+    Transforms a run report into a dictionary that can be serialized in json
     '''
 
 
@@ -15,6 +15,9 @@ class Reporter(object):
         Constructor
         '''
     def compute_report(self, report):
+        '''
+        Transforms a run report into a dictionary that can be serialized in json
+        '''
 
         list_report = []
         for i in report.convention_errors:

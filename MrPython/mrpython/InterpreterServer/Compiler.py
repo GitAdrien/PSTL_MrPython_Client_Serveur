@@ -9,7 +9,7 @@ from InterpreterServer.RunReport import RunReport
 from InterpreterServer.Parser import Parser
 class Compiler(object):
     '''
-    Compilateur
+    Compiler
     '''
 
 
@@ -19,6 +19,10 @@ class Compiler(object):
         '''
 
     def compile(self, ast, report, compil_type, filename):
+        '''
+        Compiles an ast
+        returns a code and a report
+        '''
         try:
             code = compile(ast, filename, compil_type)
         except SyntaxError as err:

@@ -8,10 +8,17 @@ import ast
 from InterpreterServer.RunReport import RunReport
 import sys
 class Parser():
+    '''
+    Parsing class
+    '''
     #va parser
     def __init__(self):
         pass
     def parse(self, source, report, filename):
+        '''
+        Parse a source code string 
+        returns an ast and a report
+        '''
         try:
             res = ast.parse(source, filename)
         # Handle the different kinds of compilation errors
